@@ -2,6 +2,7 @@ import arg from 'arg';
 import inquirer from 'inquirer';
 import fs from 'fs';
 import protobuf from 'protobufjs';
+import fuzzypath from 'inquirer-fuzzy-path';
 
 export function parseArgs() {
     return arg({
@@ -14,12 +15,12 @@ export function parseArgs() {
     });
 }
 export async function chooseMessage(_messages: string[]) {
-    inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'))
+    inquirer.registerPrompt('fuzzypath', fuzzypath);
     const messages = ['Enter name', ..._messages];
     const hexOrList = ["ENTER YOUR HEX", new inquirer.Separator(), "LIST OF PROTOS"];
-    const listOrFile = ["DIRECTORY OF PROTOS", new inquirer.Separator(), "ENTER YOUR PROTO FILE"];
+    const listOrFile = ["SELECT YOUR DIRECTORY OF PROTOS", new inquirer.Separator(), "ENTER YOUR PROTO FILE"];
 
-    const directoryPath = 'C:\\Users\\mindtech04\\Desktop\\Nova pasta (6)';
+    const directoryPath = 'C:\\Users\\mindtech04\\Desktop';
     const file = fs.readdirSync(directoryPath);
     const filterProtoFile = file.filter(file => file.endsWith('.proto'));
 
@@ -50,7 +51,7 @@ export async function chooseMessage(_messages: string[]) {
                 choices: listOrFile,
             });
         if (ListOrProtoFile.listOfProtos === 'SELECT YOUR DIRECTORY OF PROTOS') {
-            const directorySelected = await inquirer
+            const directoryFile = await inquirer
                 .prompt([
                     {
                         type: 'fuzzypath',
@@ -68,7 +69,6 @@ export async function chooseMessage(_messages: string[]) {
         if (ListOrProtoFile.listOfProtos === 'ENTER YOUR PROTO FILE') {
             const fileProto = await inquirer.prompt({
                 type: 'list',
-                
                 name: 'fileProto',
                 message: 'Select your proto file',
                 choices: messages,
