@@ -3,6 +3,7 @@ import inquirer from 'inquirer';
 import fs from 'fs';
 import protobuf from 'protobufjs';
 import fuzzypath from 'inquirer-fuzzy-path';
+import { parseMessageNames } from './protobuf';
 
 export function parseArgs() {
     return arg({
@@ -21,8 +22,6 @@ export async function chooseMessage(_messages: string[]) {
     const listOrFile = ["SELECT YOUR DIRECTORY OF PROTOS", new inquirer.Separator(), "ENTER YOUR PROTO FILE"];
 
     const directoryPath = 'C:\\Users\\mindtech04\\Desktop';
-    const file = fs.readdirSync(directoryPath);
-    const filterProtoFile = file.filter(file => file.endsWith('.proto'));
 
     const result = await inquirer
         .prompt({
@@ -56,16 +55,23 @@ export async function chooseMessage(_messages: string[]) {
                     {
                         type: 'fuzzypath',
                         name: 'protoFile',
+                        itemType: 'file',
                         message: 'Choose a proto file',
                         rootPath: directoryPath,
-                        excludePath: nodePath => nodePath.startsWith('node_modules'),
-                        itemType: 'directory',
-                        suggestOnly: false,
+                        excludeFilter: nodePath => !nodePath.endsWith('.proto'),
+                        suggestOnly: true,
                         depthLimit: 4,
-                        default: 'C:\\Users\\mindtech04\\Desktop',
-                    },
-                ])
-        };
+                        // default: 'Proto files: ',
+                        validate: (value: string) => {
+                            if (value.endsWith('.proto')) {
+                                return true;
+                            }
+                            return 'Please select a proto file';
+                        },
+                    }
+                ]);
+            return directoryFile.protoFile;
+        }
         if (ListOrProtoFile.listOfProtos === 'ENTER YOUR PROTO FILE') {
             const fileProto = await inquirer.prompt({
                 type: 'list',
@@ -106,16 +112,16 @@ function pbTypeToInput(type: string) {
             return 'string';
     }
 }
-// export async function inputParamsSelected(message: protobuf.Type) {
-//     const params = await inquirer.prompt(
-//         message.fieldsArray.map((field) => ({
-//             type: pbTypeToInput(field.type),
-//             name: field.name,
-//             message: field.name,
-//         }))
-//     );
-//     return params;
-// }
+export async function inputParamsSelected(message: protobuf.Type) {
+    const params = await inquirer.prompt(
+        message.fieldsArray.map((field) => ({
+            type: pbTypeToInput(field.type),
+            name: field.name,
+            message: field.name,
+        }))
+    );
+    return params;
+}
 export async function inputParams(message: protobuf.Type) {
     const params = await inquirer.prompt(
         message.fieldsArray.map((field) => ({
