@@ -68,6 +68,7 @@ export async function chooseMessage(_messages: string[]) {
         if (ListOrProtoFile.listOfProtos === 'ENTER YOUR PROTO FILE') {
             const fileProto = await inquirer.prompt({
                 type: 'list',
+                
                 name: 'fileProto',
                 message: 'Select your proto file',
                 choices: messages,
